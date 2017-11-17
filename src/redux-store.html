@@ -1,0 +1,61 @@
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<script src="../node_modules/redux/dist/redux.js"></script>
+
+<script>
+
+  const initialState = {
+    patients: [
+      {
+        id: 0,
+        first: "Spider",
+        last: "man",
+        process: "Incoming"
+      },
+      {
+        id: 1,
+        first: "Iron",
+        last: "man",
+        process: "Incoming"
+      },
+      {
+        id: 2,
+        first: "Super",
+        last: "man",
+        process: "Incoming"
+      },
+      {
+        id: 3,
+        first: "Doctor",
+        last: "Strange",
+        process: "Incoming"
+      },
+    ],
+  };
+
+  const reducer = (state, action)=>{
+    if (!state) return initialState;
+
+    switch (action.type){
+      case 'ADD_PATIENT':
+        const addedPatients = state.patients.slice(0);
+        addedPatients.push(action.patient);
+        return Object.assign({}, state, {patients: addedPatients});
+        break;
+      case 'MODIFY_PATIENT':
+          const modifyPatients = state.patients.slice(0);
+          modifyPatients.forEach(p => {
+            if(p.id === action.patient.id) {
+              modifyPatients[p.id] = action.patient;
+            }
+          });
+          return Object.assign({}, state, {patients: modifyPatients});
+          break;
+    }
+  }
+  //dispatcher and reducer live inside a store(concept)
+  // const store = Redux.createStore(reducer); // create Redux store
+  const store = Redux.createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()); // for redux plugin
+  // in the api, the PolymerRedux is a function that return ReduxMixin() function that accept superClass
+  //create polymerRedux mixin
+  const ReduxMixin = PolymerRedux(store);
+</script>

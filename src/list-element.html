@@ -1,0 +1,92 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="redux-store.html">
+
+<dom-module id="list-element">
+  <template>
+    <style>
+        :host {
+          display: block;
+
+          padding: 10px 20px;
+        }
+
+        :host{
+          @apply --layout;
+          @apply --layout-vertical;
+        }
+        .item {
+          @apply --layout-horizontal;
+          @apply --layout-justified;
+          border-bottom: solid .5px grey;
+          @apply --shadow-elevation-2dp;
+        }
+        .item:hover{
+          background-color: lightgrey;
+        }
+        .name {
+          padding: 14px;
+        }
+        .message {
+          padding: 10px;
+        }
+
+      </style>
+      <template is="dom-if" if="[[!data.length]]">
+          <span class="message">No patient record!</span>
+      </template>
+      <template is="dom-repeat" items="[[data]]">
+        <div class="item">
+          <div class="name">[[item.first]] [[item.last]]</div>
+          <paper-button raised data-patient$="[[item]]" on-tap="_modifyPatientProcess">[[buttonText]]</paper-button>
+        </div>
+      </template>
+
+    </template>
+  <script>
+    class ListElement extends ReduxMixin(Polymer.Element) {
+      static get is() {
+        return 'list-element';
+      }
+      static get properties() {
+        return {
+          //Array of items to be listed
+          data: {
+            type: Array,
+            value: []
+          },
+          process: {
+            type: String,
+            value: "No_Process"
+          },
+          buttonText: {
+            type: String,
+            value: "Next"
+          }
+        }
+      }
+
+      static get actions(){
+        return {
+          modify(id, first, last, process){
+            return {
+              type: "MODIFY_PATIENT",
+              patient: {id, first, last, process}
+            }
+          }
+        }
+      }
+
+      _modifyPatientProcess(e){
+        if(this.process === "Revert") this.process = "Check_In";
+        var patient = JSON.parse(e.currentTarget.getAttribute('data-patient'));
+        console.log(patient.process)
+        this.dispatch('modify', patient.id, patient.first, patient.last, this.process);
+      }
+
+
+    }
+
+    window.customElements.define(ListElement.is, ListElement);
+  </script>
+</dom-module>

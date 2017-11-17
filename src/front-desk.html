@@ -1,0 +1,138 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="./redux-store.html">
+
+<dom-module id="front-desk">
+  <template>
+    <style>
+        :host {
+          display: block;
+
+          padding: 10px 20px;
+        }
+
+        :host {
+          @apply --layout;
+          @apply --layout-vertical;
+          margin: 20px;
+          /*@apply --shadow-elevation-3dp;*/
+          }
+          paper-button {
+            margin-top: 10px;
+            max-width: 65px;
+
+          }
+          .front-desk-chart {
+            @apply --layout;
+            @apply --layout-horizontal;
+          }
+          .incoming, .checkin, .checkout {
+            @apply --layout-flex;
+          }
+
+          .checkin, .checkout {
+            border-left: solid .5px;
+            padding-left: 10px;
+          }
+
+          .title {
+            @apply --layout;
+            border-bottom: solid .5px gray;
+            font-size: 18px;
+          }
+          .title >*{
+            @apply --layout-center-center;
+          }
+
+      </style>
+         <div class="front-desk-chart">
+           <div class="incoming">
+             <div class="title"><span>Incoming</span></div>
+             <list-element data="[[incomingPatients]]" process="Check_In" button-text="Check In"></list-element>
+           </div>
+           <div class="checkin">
+             <div class="title">Check In</div>
+             <list-element data="[[checkInPatients]]" process="Check_Out" button-text="Check Out"></list-element>
+           </div>
+           <div class="checkout">
+             <div class="title">Check Out</div>
+             <list-element data="[[checkOutPatients]]" process="Revert" button-text="Revert"></list-element>
+           </div>
+         </div>
+
+    </template>
+  <script>
+    class FrontDesk extends ReduxMixin(Polymer.Element){ //1) extends redux mixin
+      static get is() {
+        return 'front-desk';
+      }
+
+      _captureEventFromListElement(e){
+        console.log(e.detail)
+
+        const patient = e.detail;
+        const id = patient.id,
+              first = patient.first,
+              last = patient.last,
+              process = patient.process;
+
+        this._modifyPatientProcess(id, first, last, process);
+
+
+      }
+
+      static get observers(){
+        return ['_patientsChanged(patients.*)'];
+      }
+
+      _patientsChanged(patients){
+        console.log("front-desk", patients)
+        if(patients.value){
+          //need a better way
+          //get incoming patients, checkin and checkout patients
+          this.incomingPatients = this._getPatients(this.patients, "Incoming");
+          this.checkInPatients = this._getPatients(this.patients, "Check_In");
+          this.checkOutPatients = this._getPatients(this.patients, "Check_Out");
+        }
+        console.log("incoming", this.incomingPatients);
+        console.log("checkin", this.checkInPatients);
+        console.log("checkout", this.checkOutPatients);
+
+      }
+
+      _getPatients(patients, processType){
+          // return patients.filter(patient => patient.process === processType);
+          return patients.filter(function(patient){
+            return patient.process === processType;
+          });
+      }
+
+      static get properties(){
+        return {
+          rootPath: String,
+          patients: { //define the statePath
+            type: Array,
+            statePath: 'patients'
+          },
+
+          incomingPatients: Array,
+
+          checkInPatients: {
+            type: Array,
+          },
+
+          checkOutPatients: {
+            type: Array,
+          },
+        }
+      }
+
+    }
+
+    window.customElements.define(FrontDesk.is, FrontDesk);
+  </script>
+</dom-module>

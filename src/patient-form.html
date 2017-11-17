@@ -1,0 +1,96 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="list-element.html">
+
+<link rel="import" href="redux-store.html">
+
+<dom-module id="patient-form">
+  <template>
+    <style>
+      :host {
+        display: block;
+
+        padding: 10px 20px;
+      }
+      :host {
+          @apply --layout;
+          @apply --layout-vertical;
+          margin: 20px;
+      }
+      paper-button {
+        margin-top: 10px;
+        max-width: 65px;
+
+      }
+
+    </style>
+        <paper-input id="first" aways-float-label placeholder="First name"></paper-input>
+        <paper-input id="last" aways-float-label placeholder="Last name"></paper-input>
+        <paper-button on-click="_addPatient" raised>Register</paper-button>
+        <div>Current Patients: [[patientCount]]</div>
+  </template>
+
+  <script>
+    // class PatientForm extends Polymer.Element {
+    class PatientForm extends ReduxMixin(Polymer.Element){
+      static get is() {
+        return 'patient-form';
+      }
+
+      connectedCallback() {
+          super.connectedCallback();
+          const state = this.getState();
+          console.log(state);
+      }
+
+      static get properties() {
+        return {
+          rootPath: String,
+          patients: {
+            type: Array,
+            statePath: 'patients',
+          },
+
+          patientCount: {
+            type: Number,
+            computed: '_computePatientCount(patients)'
+          },
+
+        }
+      }
+
+      _computePatientCount(patients){
+          return patients.length;
+      }
+
+      //define redux action
+      static get actions() {
+  			return {
+  				add(id, first, last, process) {
+  					return {
+  						type: 'ADD_PATIENT',
+  						patient: {id, first, last, process}
+  					}
+  				}
+  			};
+      }
+
+      _addPatient(){
+        const first = this.$.first,
+        last = this.$.last;
+        if(first.value || last.value){
+          this.dispatch('add', this.patientCount, first.value, last.value, "Incoming");
+          //clear fields
+          first.value = null;
+          last.value = null;
+        }
+
+      }
+    }
+
+    window.customElements.define(PatientForm.is, PatientForm);
+  </script>
+</dom-module>
